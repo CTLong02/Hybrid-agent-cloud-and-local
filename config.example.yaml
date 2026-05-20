@@ -1,0 +1,75 @@
+# Hybrid Coding Agent — example configuration
+# Copy to config.yaml and edit. Run:  hybrid-agent run -c config.yaml -t tasks.md
+
+# Project root: the codebase the agent operates on. Sandboxes are git
+# worktrees inside this repo.
+project_root: "/path/to/your/project"
+
+log_level: INFO
+log_file: hybrid_agent.log
+
+state:
+  db_path: .hybrid_agent_state.db
+
+sandbox:
+  base_dir: .hybrid_agent_sandboxes
+  use_git_worktree: true
+  base_branch: main
+  branch_prefix: "agent/"
+  cleanup_on_success: false   # keep branches for human PR review
+
+retry:
+  max_attempts: 5
+  initial_delay_seconds: 2.0
+  max_delay_seconds: 60.0
+  exponential_base: 2.0
+  jitter: true
+
+routing:
+  # First-match-wins. Order: availability -> tags -> failure-escalation ->
+  # path-globs -> complexity -> default.
+  default_backend: local
+  force_claude_tags: [security, auth, payment, claude_only]
+  force_local_tags: [local_only]
+  claude_for_complexity: [high]
+  escalate_to_claude_after_failures: 2
+  claude_path_globs:
+    - "**/auth/**"
+    - "**/payment/**"
+    - "**/security/**"
+
+orchestrator:
+  poll_interval_seconds: 0.5
+  max_concurrent_tasks: 4         # how many tasks can be in-flight at once
+  fail_fast: false
+  auto_fix_on_review: true        # reviewer may Edit/Write to fix issues
+  review_max_iterations: 2
+  plan_timeout_seconds: 600
+  code_timeout_seconds: 1800
+  review_timeout_seconds: 600
+
+# Local LLM endpoints. With 12GB VRAM you'll typically have ONE endpoint.
+# Add more entries (e.g. another machine) to scale local concurrency.
+local:
+  endpoints:
+    - name: ollama-main
+      url: http://localhost:11434
+      model: qwen3-coder:30b
+      timeout_seconds: 600
+      max_tokens: 8192
+      temperature: 0.2
+      # api_key: ...   # only if your endpoint requires auth
+
+# Claude Code SDK. Auth is handled by the `claude` CLI's existing OAuth login;
+# no API key here. Run `claude` once and sign in before using.
+claude:
+  enabled: true
+  concurrency: 1                  # serialize Claude calls
+  cwd: null                       # null => use project_root for non-sandboxed calls
+  allowed_tools: [Read, Write, Edit, Bash, Grep, Glob]
+  max_turns: 30
+  # Optional explicit model override (otherwise Claude Code picks default):
+  # planner_model: "claude-sonnet-4-5"
+  # reviewer_model: "claude-sonnet-4-5"
+  # coder_model: "claude-sonnet-4-5"
+  # task_generator_model: "claude-sonnet-4-5"   # used by `hybrid-agent generate-tasks`

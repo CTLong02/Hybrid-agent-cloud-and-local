@@ -1,0 +1,16 @@
+.claude/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+hybrid_agent.egg-info/
+merged/
+merged_uitest/
+my-codebase/
+workspace/
+
+_pytest_run.log
+.coverage
+CLAUDE.md
+config.yaml
+hybrid_agent.log
+tasks.md

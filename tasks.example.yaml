@@ -1,0 +1,25 @@
+tasks:
+  - id: T001
+    title: Create Student model
+    tags: [model, database]
+    complexity: low
+    files: [src/models/student.py]
+    acceptance: Student model with id, name, email, dob fields
+    description: |
+      Create a SQLAlchemy model `Student` matching the existing pattern.
+
+  - id: T002
+    title: Create Student schema
+    depends_on: [T001]
+    tags: [schema, validation]
+    complexity: low
+    files: [src/schemas/student.py]
+    acceptance: Pydantic StudentCreate/Update/Read schemas with validation
+
+  - id: T003
+    title: Create Student API
+    depends_on: [T001, T002]
+    tags: [api, crud]
+    complexity: medium
+    files: [src/api/students.py]
+    acceptance: All CRUD endpoints with proper status codes
