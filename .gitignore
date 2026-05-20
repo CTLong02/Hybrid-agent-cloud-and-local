@@ -7,6 +7,7 @@ merged/
 merged_uitest/
 my-codebase/
 workspace/
+**/__pycache__/
 
 _pytest_run.log
 .coverage
